@@ -3,3 +3,8 @@
 *.cmd           text eol=crlf working-tree-encoding=UTF-8
 *.java          text eol=lf working-tree-encoding=UTF-8 diff=java
 *.jar           binary
+*.png           binary
+*.jpg           binary
+*.otf           binary
+*.ttf           binary
+*.css           binary

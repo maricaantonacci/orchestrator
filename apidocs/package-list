@@ -20,7 +20,6 @@ it.reply.orchestrator.dto.mesos.marathon
 it.reply.orchestrator.dto.monitoring
 it.reply.orchestrator.dto.onedata
 it.reply.orchestrator.dto.policies
-it.reply.orchestrator.dto.qcg
 it.reply.orchestrator.dto.ranker
 it.reply.orchestrator.dto.request
 it.reply.orchestrator.dto.security
@@ -39,5 +38,6 @@ it.reply.orchestrator.service.commands
 it.reply.orchestrator.service.deployment.providers
 it.reply.orchestrator.service.deployment.providers.factory
 it.reply.orchestrator.service.security
+it.reply.orchestrator.tosca
 it.reply.orchestrator.utils
 it.reply.orchestrator.workflow
