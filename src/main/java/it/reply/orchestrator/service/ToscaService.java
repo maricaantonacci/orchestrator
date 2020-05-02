@@ -17,8 +17,6 @@
 package it.reply.orchestrator.service;
 
 import alien4cloud.tosca.model.ArchiveRoot;
-import alien4cloud.tosca.parser.ParsingException;
-import alien4cloud.tosca.parser.ParsingResult;
 
 import it.reply.orchestrator.dal.entity.Resource;
 import it.reply.orchestrator.dto.cmdb.ComputeService;
@@ -28,14 +26,15 @@ import it.reply.orchestrator.dto.dynafed.Dynafed;
 import it.reply.orchestrator.dto.onedata.OneData;
 import it.reply.orchestrator.dto.policies.ToscaPolicy;
 import it.reply.orchestrator.enums.DeploymentProvider;
+import it.reply.orchestrator.enums.PrivateNetworkType;
 import it.reply.orchestrator.exception.service.ToscaException;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.alien4cloud.tosca.model.definitions.AbstractPropertyValue;
 import org.alien4cloud.tosca.model.definitions.DeploymentArtifact;
 import org.alien4cloud.tosca.model.definitions.PropertyDefinition;
 import org.alien4cloud.tosca.model.templates.Capability;
@@ -46,20 +45,14 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 public interface ToscaService {
 
-  public ParsingResult<ArchiveRoot> getArchiveRootFromTemplate(String toscaTemplate)
-      throws ParsingException;
-
   /**
-   * Obtain the string TOSCA template representation from the in-memory representation. <br/>
-   * <b>WARNING: Some nodes or properties might be missing!! Use at your own risk!</b>
+   * Obtain the string TOSCA template representation from the in-memory representation.
    *
    * @param archiveRoot
    *          the {@link ArchiveRoot} from which serialize the TOSCA template
    * @return the serialized TOSCA template
-   * @throws IOException
-   *           if there is an error serializing the template
    */
-  public String getTemplateFromTopology(ArchiveRoot archiveRoot);
+  public String serialize(ArchiveRoot archiveRoot);
 
   /**
    * Adds the parameters needed for 'tosca.nodes.indigo.ElasticCluster' nodes (deployment_id,
@@ -97,6 +90,8 @@ public interface ToscaService {
    *          the in-memory TOSCA template.
    * @param computeService
    *          the chosen cloud compute service data.
+   *
+   * @return Map of Contextualized images
    */
   public Map<Boolean, Map<NodeTemplate, Image>> contextualizeImages(ArchiveRoot parsingResult,
       ComputeService computeService);
@@ -129,31 +124,25 @@ public interface ToscaService {
   public void replaceInputFunctions(ArchiveRoot archiveRoot, Map<String, Object> inputs);
 
   /**
-   * Parse the TOSCA template (string) and get the in-memory representation.<br/>
+   * Parse the TOSCA template (string) and get the in-memory representation.<br>
    * This also checks for validation errors.
    *
    * @param toscaTemplate
    *          the TOSCA template as string.
    * @return an {@link ArchiveRoot} representing the template.
-   * @throws IOException
-   *           if an I/O error occurs (converting the string to a CSAR zipped archive internally).
-   * @throws ParsingException
-   *           if parsing errors occur.
    * @throws ToscaException
    *           if validation errors occur.
    */
-  public ArchiveRoot parseTemplate(String toscaTemplate);
+  public ArchiveRoot parse(String toscaTemplate);
 
   /**
-   * As for {@link #parseTemplate(String)} but also validates user's inputs.
+   * As for {@link #parse(String)} but also validates user's inputs.
    *
    * @param toscaTemplate
    *          the TOSCA template as string.
+   * @param inputs
+   *          the input parameters
    * @return an {@link ArchiveRoot} representing the template.
-   * @throws IOException
-   *           if an I/O error occurs (converting the string to a CSAR zipped archive internally).
-   * @throws ParsingException
-   *           if parsing errors occur.
    * @throws ToscaException
    *           if validation errors occur.
    */
@@ -164,15 +153,16 @@ public interface ToscaService {
    *
    * @param toscaTemplate
    *          the TOSCA template as string.
+   * @param inputs
+   *          the inputs
    * @return an {@link ArchiveRoot} representing the template.
-   * @throws IOException
-   *           if an I/O error occurs (converting the string to a CSAR zipped archive internally).
-   * @throws ParsingException
-   *           if parsing errors occur.
    * @throws ToscaException
    *           if validation errors occur.
    */
   public ArchiveRoot prepareTemplate(String toscaTemplate, Map<String, Object> inputs);
+
+  public Optional<AbstractPropertyValue> getNodePropertyByName(NodeTemplate node,
+      String propertyName);
 
   public Optional<Capability> getNodeCapabilityByName(NodeTemplate node, String propertyName);
 
@@ -221,7 +211,7 @@ public interface ToscaService {
    *          an {@link ArchiveRoot} representing the template.
    * @param inputs
    *          the user's input list.
-   * @return a Map of {@link OneData} requirement, index by node name.<br/>
+   * @return a Map of {@link OneData} requirement, index by node name.<br>
    *         <b>WARNING:</b> (TEMPORARY) currently OneData nodes are not supported; thus the name
    *         used are hard-coded and are either 'input', 'output' or 'service'.
    */
@@ -243,7 +233,11 @@ public interface ToscaService {
   public DirectedMultigraph<NodeTemplate, RelationshipTemplate> buildNodeGraph(
       Map<String, NodeTemplate> nodes, boolean checkForCycles);
 
+  public PrivateNetworkType getPrivateNetworkType(ArchiveRoot archiveRoot);
+
   public boolean isHybridDeployment(ArchiveRoot archiveRoot);
+
+  public boolean isElasticClusterDeployment(ArchiveRoot archiveRoot);
 
   public boolean isMesosGpuRequired(ArchiveRoot archiveRoot);
 
@@ -259,9 +253,12 @@ public interface ToscaService {
 
   boolean isScalable(NodeTemplate nodeTemplate);
 
-  public ArchiveRoot setHybridDeployment(ArchiveRoot ar);
+  public ArchiveRoot setHybridDeployment(ArchiveRoot ar, String publicNetworkName,
+      String privateNetworkName, String privateNetworkCidr);
 
-  public ArchiveRoot setHybridUpdateDeployment(ArchiveRoot ar);
+  public ArchiveRoot setHybridUpdateDeployment(ArchiveRoot ar,
+      boolean newResourcesOnDifferentService,
+      String publicNetworkName, String privateNetworkName, String privateNetworkCidr);
 
   public Map<NodeTemplate, Flavor> extractFlavorRequirements(ArchiveRoot parsingResult);
 

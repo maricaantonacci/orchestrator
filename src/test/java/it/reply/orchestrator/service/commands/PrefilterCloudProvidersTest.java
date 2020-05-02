@@ -28,6 +28,7 @@ import it.reply.orchestrator.dto.cmdb.CloudService;
 import it.reply.orchestrator.dto.cmdb.Image;
 import it.reply.orchestrator.dto.cmdb.CloudProvider;
 import it.reply.orchestrator.dto.cmdb.CloudServiceType;
+
 import it.reply.orchestrator.dto.deployment.DeploymentMessage;
 import it.reply.orchestrator.dto.onedata.OneData;
 import it.reply.orchestrator.dto.policies.SlaPlacementPolicy;
@@ -131,7 +132,7 @@ public class PrefilterCloudProvidersTest extends
     ArchiveRoot ar = new ArchiveRoot();
     when(deploymentRepository.findOne(generateDeployDm.getDeploymentId()))
         .thenReturn(deployment);
-    when(toscaService.parseTemplate(Mockito.anyString())).thenReturn(ar);
+    when(toscaService.parse(Mockito.anyString())).thenReturn(ar);
     when(toscaService.contextualizeImages(Mockito.anyObject(), Mockito.anyObject()))
         .thenReturn(Maps.newHashMap(Boolean.FALSE, new HashMap<>()));
 
@@ -166,7 +167,7 @@ public class PrefilterCloudProvidersTest extends
     ArchiveRoot ar = new ArchiveRoot();
     when(deploymentRepository.findOne(generateDeployDm.getDeploymentId()))
         .thenReturn(deployment);
-    when(toscaService.parseTemplate(Mockito.anyString())).thenReturn(ar);
+    when(toscaService.parse(Mockito.anyString())).thenReturn(ar);
     when(toscaService.contextualizeImages(Mockito.anyObject(), Mockito.anyObject()))
         .thenReturn(new HashMap<>());
 
@@ -202,7 +203,7 @@ public class PrefilterCloudProvidersTest extends
     ArchiveRoot ar = new ArchiveRoot();
     when(deploymentRepository.findOne(generateDeployDm.getDeploymentId()))
         .thenReturn(deployment);
-    when(toscaService.parseTemplate(Mockito.anyString())).thenReturn(ar);
+    when(toscaService.parse(Mockito.anyString())).thenReturn(ar);
     when(toscaService.contextualizeImages(Mockito.anyObject(), Mockito.anyObject()))
         .thenReturn(new HashMap<>());
 
@@ -236,7 +237,7 @@ public class PrefilterCloudProvidersTest extends
     ArchiveRoot ar = new ArchiveRoot();
     when(deploymentRepository.findOne(generateDeployDm.getDeploymentId()))
         .thenReturn(deployment);
-    when(toscaService.parseTemplate(Mockito.anyString())).thenReturn(ar);
+    when(toscaService.parse(Mockito.anyString())).thenReturn(ar);
     when(toscaService.contextualizeImages(Mockito.anyObject(), Mockito.anyObject()))
         .thenReturn(new HashMap<>());
 
@@ -282,7 +283,6 @@ public class PrefilterCloudProvidersTest extends
     assertThatCode(() -> command.execute(execution))
         .doesNotThrowAnyException();
   }
-
 
 
   private RankCloudProvidersMessage generateRankCloudProvidersMessage(Deployment deployment,

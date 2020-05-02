@@ -18,6 +18,7 @@ package it.reply.orchestrator.service.deployment.providers;
 
 import alien4cloud.tosca.model.ArchiveRoot;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
@@ -61,10 +62,12 @@ import it.reply.orchestrator.utils.CommonUtils;
 import it.reply.orchestrator.utils.OneDataUtils;
 import it.reply.orchestrator.utils.WorkflowConstants.ErrorCode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +110,8 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
   @Autowired
   private ImClientFactory imClientFactory;
 
+  private static final String VMINFO = "VirtualMachineInfo";
+
   protected <R> R executeWithClientForResult(List<CloudProviderEndpoint> cloudProviderEndpoints,
       @Nullable OidcTokenId requestedWithToken,
       ThrowingFunction<InfrastructureManager, R, ImClientException> function)
@@ -131,12 +136,12 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
         .isPresent();
   }
 
-  protected ArchiveRoot prepareTemplate(Deployment deployment,
+  protected ArchiveRoot prepareTemplate(String template, Deployment deployment,
       DeploymentMessage deploymentMessage) {
     RuntimeProperties runtimeProperties =
         OneDataUtils.getOneDataRuntimeProperties(deploymentMessage);
     Map<String, Object> inputs = deployment.getParameters();
-    ArchiveRoot ar = toscaService.parseAndValidateTemplate(deployment.getTemplate(), inputs);
+    ArchiveRoot ar = toscaService.parseAndValidateTemplate(template, inputs);
     if (runtimeProperties.getVaules().size() > 0) {
       indigoInputsPreProcessorService.processGetInputAttributes(ar, inputs, runtimeProperties);
     } else {
@@ -158,7 +163,7 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
     // Update status of the deployment
     deployment.setTask(Task.DEPLOYER);
 
-    ArchiveRoot ar = prepareTemplate(deployment, deploymentMessage);
+    ArchiveRoot ar = prepareTemplate(deployment.getTemplate(), deployment, deploymentMessage);
 
     final OidcTokenId requestedWithToken = deploymentMessage.getRequestedWithToken();
 
@@ -177,9 +182,13 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
         deployment.getCloudProviderEndpoint().getAllCloudProviderEndpoint();
 
     if (toscaService.isHybridDeployment(ar)) {
-      toscaService.setHybridDeployment(ar);
+      toscaService.setHybridDeployment(ar,
+          computeService.getPublicNetworkName(),
+          computeService.getPrivateNetworkName(),
+          computeService.getPrivateNetworkCidr()
+      );
     }
-    String imCustomizedTemplate = toscaService.getTemplateFromTopology(ar);
+    String imCustomizedTemplate = toscaService.serialize(ar);
     // Deploy on IM
     try {
       String infrastructureId =
@@ -260,6 +269,56 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
   }
 
   @Override
+  public Optional<String> getDeploymentLogInternal(DeploymentMessage deploymentMessage) {
+    Deployment deployment = getDeployment(deploymentMessage);
+
+    final OidcTokenId requestedWithToken = deploymentMessage.getRequestedWithToken();
+
+    List<CloudProviderEndpoint> cloudProviderEndpoints =
+        deployment.getCloudProviderEndpoint().getAllCloudProviderEndpoint();
+
+    // Try to get the logs of the virtual infrastructure.
+    try {
+      Property contMsg = executeWithClientForResult(cloudProviderEndpoints, requestedWithToken,
+          client -> client.getInfrastructureContMsg(deployment.getEndpoint()));
+      if (!Strings.isNullOrEmpty(contMsg.getValue())) {
+        return Optional.of(contMsg.getValue());
+      }
+    } catch (ImClientException exception) {
+      throw handleImClientException(exception);
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<String> getDeploymentExtendedInfoInternal(DeploymentMessage deploymentMessage) {
+    Deployment deployment = getDeployment(deploymentMessage);
+
+    Map<Boolean, Set<Resource>> resources =
+        resourceRepository
+            .findByDeployment_id(deployment.getId())
+            .stream()
+            .collect(Collectors.partitioningBy(resource ->
+              (resource.getIaasId() != null && resource.getMetadata() != null),
+                Collectors.toSet()));
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    boolean first = true;
+    for (Resource resource : resources.get(true)) {
+      Map<String,String> resourceMetadata = resource.getMetadata();
+      if (resourceMetadata != null && resourceMetadata.containsKey(VMINFO)) {
+        if (!first) {
+          sb.append(",");
+        }
+        first = false;
+        sb.append(resourceMetadata.get(VMINFO));
+      }
+    }
+    sb.append("]");
+    return Optional.of(sb.toString());
+  }
+
+  @Override
   public void finalizeDeploy(DeploymentMessage deploymentMessage) {
 
     Deployment deployment = getDeployment(deploymentMessage);
@@ -325,7 +384,7 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
     final CloudProviderEndpoint chosenCloudProviderEndpoint =
         deploymentMessage.getChosenCloudProviderEndpoint();
 
-    ArchiveRoot newAr = prepareTemplate(deployment, deploymentMessage);
+    ArchiveRoot newAr = prepareTemplate(template, deployment, deploymentMessage);
 
     String accessToken = null;
     if (oidcProperties.isEnabled()) {
@@ -373,8 +432,16 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
             .getCpComputeServiceId()
             .equals(deployment.getCloudProviderEndpoint().getCpComputeServiceId());
 
-    if (newResourcesOnDifferentService) {
-      toscaService.setHybridUpdateDeployment(newAr);
+    ComputeService computeService = deploymentMessage
+        .getCloudServicesOrderedIterator()
+        .firstService(ComputeService.class);
+
+    if (deploymentMessage.isHybrid()) {
+      toscaService.setHybridUpdateDeployment(newAr,
+          newResourcesOnDifferentService,
+          computeService.getPublicNetworkName(),
+          computeService.getPrivateNetworkName(),
+          computeService.getPrivateNetworkCidr());
     }
 
     Map<String, NodeTemplate> newNodes =
@@ -452,7 +519,6 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
               && newNode.getType().equals(resource.getToscaNodeType())
               && resource.getState() != NodeStates.DELETING)
           .collect(Collectors.toList());
-
       long newCount = toscaService.getCount(newNode).orElse(1L);
       int oldCount = resources.size();
       long diff = newCount - oldCount;
@@ -468,10 +534,6 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
         resourceRepository.save(resource);
       }
     });
-
-    ComputeService computeService = deploymentMessage
-        .getCloudServicesOrderedIterator()
-        .currentService(ComputeService.class);
 
     toscaService.contextualizeAndReplaceImages(newAr, computeService, DeploymentProvider.IM);
     toscaService.contextualizeAndReplaceFlavors(newAr, computeService, DeploymentProvider.IM);
@@ -498,7 +560,7 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
         LOG.debug("No VMs to delete");
       }
 
-      String templateToDeploy = toscaService.getTemplateFromTopology(newAr);
+      String templateToDeploy = toscaService.serialize(newAr);
       LOG.debug("Template sent: \n{}", templateToDeploy);
 
       List<CloudProviderEndpoint> cloudProviderEndpoints =
@@ -604,6 +666,7 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
 
     // for each URL get the tosca Node Name about the VM
     Multimap<String, String> vmMap = HashMultimap.create();
+    Map<String, VirtualMachineInfo> vmMapInfo = new HashMap<>();
     for (String vmId : infrastructureState.getVmStates().keySet()) {
       VirtualMachineInfo vmInfo =
           executeWithClientForResult(cloudProviderEndpoints, requestedWithToken,
@@ -617,7 +680,10 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
           .filter(Objects::nonNull)
           .map(Object::toString)
           .findAny()
-          .ifPresent(toscaNodeName -> vmMap.put(toscaNodeName, vmId));
+          .ifPresent(toscaNodeName -> {
+            vmMap.put(toscaNodeName, vmId);
+            vmMapInfo.put(vmId, vmInfo);
+          });
     }
 
     Map<Boolean, Set<Resource>> resources =
@@ -630,15 +696,22 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
     for (Resource bindedResource : resources.get(true)) {
       boolean vmIsPresent =
           vmMap.get(bindedResource.getToscaNodeName()).remove(bindedResource.getIaasId());
-      if (!vmIsPresent && bindedResource.getState() != NodeStates.DELETING) {
-        // the node isn't supposed to be deleted -> put it again in the pool of bindable resources
-        // TODO maybe throw an error? Eventual consistency (for update) should already have been
-        // handled
-        LOG.warn("Resource <{}> in status {} was binded to the VM <{}> which doesn't exist anymore",
-            bindedResource.getId(), bindedResource.getState(), bindedResource.getIaasId());
-        bindedResource.setIaasId(null);
-        bindedResource.setCloudProviderEndpoint(null);
-        resources.get(false).add(bindedResource);
+      if (!vmIsPresent) {
+        if (bindedResource.getState() != NodeStates.DELETING) {
+          // the node isn't supposed to be deleted -> put it again in the pool of bindable resources
+          // TODO maybe throw an error? Eventual consistency (for update) should already have been
+          // handled
+          LOG.warn("Resource <{}> in status {} unbinded from VM <{}> which doesn't exist anymore.",
+              bindedResource.getId(), bindedResource.getState(), bindedResource.getIaasId());
+          bindedResource.setIaasId(null);
+          bindedResource.setCloudProviderEndpoint(null);
+          resources.get(false).add(bindedResource);
+        }
+      } else {
+        if (vmMapInfo.containsKey(bindedResource.getIaasId())) {
+          VirtualMachineInfo vmInfo = vmMapInfo.get(bindedResource.getIaasId());
+          writeVmInfoToResource(bindedResource, vmInfo);
+        }
       }
     }
 
@@ -646,12 +719,39 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
       Collection<String> vmIds = vmMap.get(resource.getToscaNodeName());
       vmIds.stream().findAny().ifPresent(vmId -> {
         resource.setIaasId(vmId);
+        writeVmInfoToResource(resource, vmMapInfo.get(vmId));
         vmIds.remove(vmId);
       });
     }
     if (!vmMap.isEmpty()) {
       LOG.warn("Some VMs of infrastructure <{}> couldn't be binded to a resource: {}",
           infrastructureId, vmMap.entries());
+    }
+  }
+
+  private void writeVmInfoToResource(Resource bindedResource,
+      VirtualMachineInfo vmInfo) {
+    Map<String,String> resourceMetadata = bindedResource.getMetadata();
+    if (resourceMetadata == null) {
+      resourceMetadata = new HashMap<>();
+      bindedResource.setMetadata(resourceMetadata);
+    }
+    VirtualMachineInfo vmOldInfo = null;
+    if (resourceMetadata.containsKey(VMINFO)) {
+      try {
+        vmOldInfo = new ObjectMapper().readValue(resourceMetadata.get(VMINFO),
+            VirtualMachineInfo.class);
+      } catch (IOException e) {
+        throw new DeploymentException("Error deserializing VM Info", e);
+      }
+    }
+    if (vmOldInfo == null || !vmInfo.equals(vmOldInfo)) {
+      try {
+        resourceMetadata.put(VMINFO,
+            new ObjectMapper().writeValueAsString(vmInfo));
+      } catch (IOException e) {
+        throw new DeploymentException("Error serializing VM Info", e);
+      }
     }
   }
 

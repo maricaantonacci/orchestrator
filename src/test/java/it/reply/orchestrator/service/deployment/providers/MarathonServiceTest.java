@@ -18,6 +18,7 @@ package it.reply.orchestrator.service.deployment.providers;
 
 import com.google.common.collect.Lists;
 
+import it.reply.orchestrator.config.properties.OrchestratorProperties;
 import it.reply.orchestrator.config.specific.ToscaParserAwareTest;
 import it.reply.orchestrator.controller.ControllerTestUtils;
 import it.reply.orchestrator.dal.entity.Deployment;
@@ -42,7 +43,9 @@ import it.reply.orchestrator.service.VaultService;
 import it.reply.orchestrator.service.deployment.providers.factory.MarathonClientFactory;
 import it.reply.orchestrator.util.TestUtil;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URI;
@@ -70,6 +73,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +108,9 @@ public class MarathonServiceTest extends ToscaParserAwareTest {
   @MockBean
   private Marathon marathonClient;
 
+  @Mock
+  private OrchestratorProperties orchestratorProperties;
+
   private static final String defaultVaultEndpoint = "https://default.vault.com:8200";
 
   @Before
@@ -113,6 +120,7 @@ public class MarathonServiceTest extends ToscaParserAwareTest {
         .when(oauth2tokenService.executeWithClientForResult(
             Mockito.any(), Mockito.any(), Mockito.any()))
         .thenAnswer(y -> ((ThrowingFunction) y.getArguments()[1]).apply("token"));
+    when(orchestratorProperties.getUrl()).thenReturn(new URI("http://localhost:8080"));
   }
 
   @Test
@@ -410,6 +418,19 @@ public class MarathonServiceTest extends ToscaParserAwareTest {
           + " nested exception is it.reply.orchestrator.exception.service."
           + "DeploymentException: Deployment timeout: Task Failure Message\n");
     }
+  }
+
+  @Test
+  public void getDeploymentExtendedInfoInternal() {
+    DeploymentMessage dm = new DeploymentMessage();
+    assertThat(marathonServiceImpl.getDeploymentExtendedInfoInternal(dm))
+      .isEqualTo(Optional.empty());
+  }
+
+  @Test
+  public void getDeploymentLogInternal() {
+    DeploymentMessage dm = new DeploymentMessage();
+    assertThat(marathonServiceImpl.getDeploymentLog(dm)).isEqualTo(Optional.empty());
   }
 
 }
