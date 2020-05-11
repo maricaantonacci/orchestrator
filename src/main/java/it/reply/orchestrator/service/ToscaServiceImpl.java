@@ -755,7 +755,7 @@ public class ToscaServiceImpl implements ToscaService {
               .orElse(false)
         );
     boolean hybridefrontend = getNodesLikeType(archiveRoot,
-        Nodes.RE.FRONT_END_RE)
+        Nodes.RE.FRONT_END)
           .stream()
           .anyMatch(node -> ToscaUtils
               .extractScalar(node.getProperties(), ToscaNames.HYBRID,
@@ -825,9 +825,9 @@ public class ToscaServiceImpl implements ToscaService {
 
   @Override
   public void removeRemovalList(NodeTemplate node) {
-    getNodeCapabilityByName(node, ToscaNames.SCALABLE_CAPABILITY)
+    getNodeCapabilityByName(node, ToscaNames.SCALABLE)
         .ifPresent(scalable -> CommonUtils
-            .removeFromOptionalMap(scalable.getProperties(), ToscaNames.REMOVAL_LIST_PROPERTY));
+            .removeFromOptionalMap(scalable.getProperties(), ToscaNames.REMOVAL_LIST));
   }
 
   @Override
@@ -876,7 +876,7 @@ public class ToscaServiceImpl implements ToscaService {
 
   @Override
   public Optional<Long> getCount(NodeTemplate nodeTemplate) {
-    return getNodeCapabilityByName(nodeTemplate, ToscaNames.SCALABLE_CAPABILITY)
+    return getNodeCapabilityByName(nodeTemplate, ToscaNames.SCALABLE)
         .flatMap(capability -> ToscaUtils
             .extractScalar(capability.getProperties(), "count", IntegerType.class));
   }
@@ -898,9 +898,9 @@ public class ToscaServiceImpl implements ToscaService {
   public List<String> getRemovalList(NodeTemplate nodeTemplate) {
 
     List<Object> items =
-        getNodeCapabilityByName(nodeTemplate, ToscaNames.SCALABLE_CAPABILITY)
+        getNodeCapabilityByName(nodeTemplate, ToscaNames.SCALABLE)
             .flatMap(capability -> ToscaUtils
-                .extractList(capability.getProperties(), ToscaNames.REMOVAL_LIST_PROPERTY)
+                .extractList(capability.getProperties(), ToscaNames.REMOVAL_LIST)
             ).orElseGet(Collections::emptyList);
 
     List<String> removalList = new ArrayList<>();
@@ -909,7 +909,7 @@ public class ToscaServiceImpl implements ToscaService {
         removalList.add((String) item);
       } else {
         LOG.warn("Skipped unsupported value <{}> in {} of node {}", item,
-            ToscaNames.REMOVAL_LIST_PROPERTY, nodeTemplate.getName());
+            ToscaNames.REMOVAL_LIST, nodeTemplate.getName());
       }
     }
     return removalList;
@@ -1307,7 +1307,7 @@ public class ToscaServiceImpl implements ToscaService {
         vrR.setName("indigovr2_router");
         this.setNodeCapability(vrR, Requirements.Capabilities.DEPENDENCY, ToscaNames.DEPENDENCY);
         ar.getTopology().getNodeTemplates().put(vrR.getName(), vrR);
-        this.setNodeRequirement(vrR, Nodes.Capabilities.CENTRALPOINT,
+        this.setNodeRequirement(vrR, ToscaNames.CENTRALPOINT,
             centralPointNode.get().getName(),
             Requirements.Relationships.DEPENDENCY);
         this.setNodeRequirement(vrR, ToscaNames.HOST, vrC.getName(),
@@ -1343,7 +1343,7 @@ public class ToscaServiceImpl implements ToscaService {
             Requirements.Relationships.DEPENDENCY);
 
         //create port for workernode
-        getNodesLikeType(ar, Nodes.RE.WORKER_NODE_RE).stream()
+        getNodesLikeType(ar, Nodes.RE.WORKER_NODE).stream()
             .forEach(slurmWorkerNode ->
               slurmWorkerNode.getRelationships().forEach((s, r) -> {
                 if (r.getRequirementName().contains(ToscaNames.HOST)) {
@@ -1418,9 +1418,9 @@ public class ToscaServiceImpl implements ToscaService {
                                 Requirements.Relationships.HOSTED);
                             this.setNodeCapability(centralPointNode,
                                 Requirements.Capabilities.ENDPOINT,
-                                Nodes.Capabilities.CENTRALPOINT);
+                                ToscaNames.CENTRALPOINT);
                             this.setNodeRequirement(node,
-                                Nodes.Capabilities.CENTRALPOINT,
+                                ToscaNames.CENTRALPOINT,
                                 centralPointNode.getName(),
                                 Requirements.Relationships.DEPENDENCY);
                           }

@@ -27,58 +27,57 @@ public class ToscaConstants {
     @UtilityClass
     public static class Types {
 
-      private static final String NODES_TYPES_NAME = "tosca.nodes.indigo.";
+      private static final String NODES_TYPES = "tosca.nodes.indigo.";
       public static final String DOCKER_APPLICATION =
-          NODES_TYPES_NAME + "Container.Application.Docker";
+          NODES_TYPES + "Container.Application.Docker";
       public static final String CHRONOS = DOCKER_APPLICATION + ".Chronos";
       public static final String MARATHON = DOCKER_APPLICATION + ".Marathon";
-      public static final String COMPUTE = NODES_TYPES_NAME + "Compute";
-      public static final String QCG = NODES_TYPES_NAME + "Qcg.Job";
+      public static final String COMPUTE = NODES_TYPES + "Compute";
+      public static final String QCG = NODES_TYPES + "Qcg.Job";
 
-      public static final String DOCKER_RUNTIME = NODES_TYPES_NAME + "Container.Runtime.Docker";
-      public static final String ONEDATA_SPACE = NODES_TYPES_NAME + "OnedataSpace";
-      public static final String ONEDATA_SERVICE_SPACE = NODES_TYPES_NAME + "OnedataServiceSpace";
-      public static final String DYNAFED = NODES_TYPES_NAME + "Dynafed";
+      public static final String DOCKER_RUNTIME = NODES_TYPES + "Container.Runtime.Docker";
+      public static final String ONEDATA_SPACE = NODES_TYPES + "OnedataSpace";
+      public static final String ONEDATA_SERVICE_SPACE = NODES_TYPES + "OnedataServiceSpace";
+      public static final String DYNAFED = NODES_TYPES + "Dynafed";
 
-      public static final String CENTRAL_POINT = NODES_TYPES_NAME + "VR.CentralPoint";
-      public static final String VROUTER = NODES_TYPES_NAME + "VR.VRouter";
-      public static final String CLIENT = NODES_TYPES_NAME + "VR.Client";
-      public static final String ELASTIC_CLUSTER = NODES_TYPES_NAME + "ElasticCluster";
+      public static final String CENTRAL_POINT = NODES_TYPES + "VR.CentralPoint";
+      public static final String VROUTER = NODES_TYPES + "VR.VRouter";
+      public static final String CLIENT = NODES_TYPES + "VR.Client";
+      public static final String ELASTIC_CLUSTER = NODES_TYPES + "ElasticCluster";
 
-      public static final String WORKER_NODE = NODES_TYPES_NAME + "LRMS.WorkerNode";
+      public static final String WORKER_NODE = NODES_TYPES + "LRMS.WorkerNode";
       public static final String SLURM_WN = WORKER_NODE + ".Slurm";
       public static final String TORQUE_WN = WORKER_NODE  + ".Torque";
       public static final String GALAXY_WN = WORKER_NODE  + ".SlurmGalaxy";
       public static final String MESOS_WN = WORKER_NODE  + ".Mesos";
       public static final String KUBERNETES_WN = WORKER_NODE  + ".Kubernetes";
 
-      public static final String FRONT_END = NODES_TYPES_NAME  + "LRMS.FrontEnd";
+      public static final String FRONT_END = NODES_TYPES  + "LRMS.FrontEnd";
       public static final String SLURM_FE = FRONT_END  + ".Slurm";
       public static final String TORQUE_FE = FRONT_END  + ".Torque";
       public static final String GALAXY_FE = FRONT_END  + ".SlurmGalaxy";
       public static final String MESOS_FE = FRONT_END  + ".Mesos";
       public static final String KUBERNETES_FE = FRONT_END  + ".Kubernetes";
 
-      public static final String BASE_NETWORK_NAME = "tosca.nodes.network.";
-      public static final String NETWORK = BASE_NETWORK_NAME + "Network";
-      public static final String PORT = BASE_NETWORK_NAME + "Port";
+      public static final String NODES_NETWORK = "tosca.nodes.network.";
+      public static final String NETWORK = NODES_NETWORK + "Network";
+      public static final String PORT = NODES_NETWORK + "Port";
     }
 
     @UtilityClass
     public static class RE {
-      public static final String FRONT_END_RE =
+      public static final String FRONT_END =
           "^tosca\\.nodes\\.indigo\\.LRMS\\.FrontEnd\\.\\w+$";
-      public static final String WORKER_NODE_RE =
+      public static final String WORKER_NODE =
           "^tosca\\.nodes\\.indigo\\.LRMS\\.WorkerNode\\.\\w+$";
     }
 
     @UtilityClass
     public static class Capabilities {
-      private static final String NODES_CAPABILITIES_NAME = "tosca.capabilities.indigo.";
-      public static final String CENTRALPOINT = "central_point";
-      public static final String ENDPOINT = NODES_CAPABILITIES_NAME + "Endpoint";
-      public static final String CONTAINER = NODES_CAPABILITIES_NAME + "Container";
-      public static final String OS = NODES_CAPABILITIES_NAME + "OperatingSystem";
+      private static final String NODES_CAPABILITIES = "tosca.capabilities.indigo.";
+      public static final String ENDPOINT = NODES_CAPABILITIES + "Endpoint";
+      public static final String CONTAINER = NODES_CAPABILITIES + "Container";
+      public static final String OS = NODES_CAPABILITIES + "OperatingSystem";
     }
   }
 
@@ -88,8 +87,8 @@ public class ToscaConstants {
     @UtilityClass
     public static class Types {
 
-      private static final String NODES_POLICIES_NAME = "tosca.policies.indigo.";
-      public static final String SLA_PLACEMENT = NODES_POLICIES_NAME + "SlaPlacement";
+      private static final String POLICIES_TYPES = "tosca.policies.indigo.";
+      public static final String SLA_PLACEMENT = POLICIES_TYPES + "SlaPlacement";
     }
 
     @UtilityClass
@@ -104,26 +103,27 @@ public class ToscaConstants {
 
     @UtilityClass
     public static class Capabilities {
-      private static final String REQUIREMENTS_CAPABILITIES_NAME = "tosca.capabilities.";
-      public static final String DEPENDENCY = REQUIREMENTS_CAPABILITIES_NAME + "Node";
-      public static final String CONTAINER = REQUIREMENTS_CAPABILITIES_NAME + "Container";
-      public static final String ENDPOINT = REQUIREMENTS_CAPABILITIES_NAME + "Endpoint";
+      private static final String REQUIREMENTS_CAPABILITIES = "tosca.capabilities.";
+      public static final String DEPENDENCY = REQUIREMENTS_CAPABILITIES + "Node";
+      public static final String CONTAINER = REQUIREMENTS_CAPABILITIES + "Container";
+      public static final String ENDPOINT = REQUIREMENTS_CAPABILITIES + "Endpoint";
     }
 
     @UtilityClass
     public static class Relationships {
-      private static final String REQUIREMENTS_RELATIONSHOPS_NAME = "tosca.relationships.";
-      public static final String DEPENDENCY = REQUIREMENTS_RELATIONSHOPS_NAME + "DependsOn";
-      public static final String HOSTED = REQUIREMENTS_RELATIONSHOPS_NAME + "HostedOn";
+      private static final String REQUIREMENTS_RELATIONSHIPS = "tosca.relationships.";
+      public static final String DEPENDENCY = REQUIREMENTS_RELATIONSHIPS + "DependsOn";
+      public static final String HOSTED = REQUIREMENTS_RELATIONSHIPS + "HostedOn";
     }
   }
 
   @UtilityClass
   public static class ToscaNames {
+    public static final String CENTRALPOINT = "central_point";    
     public static final String VRCP = "indigovr_cp";
     public static final String VRCLIENT = "indigovr_client";
-    public static final String REMOVAL_LIST_PROPERTY = "removal_list";
-    public static final String SCALABLE_CAPABILITY = "scalable";
+    public static final String REMOVAL_LIST = "removal_list";
+    public static final String SCALABLE = "scalable";
     public static final String OS = "os";
     public static final String HOST = "host";
     public static final String ENDPOINT = "endpoint";
