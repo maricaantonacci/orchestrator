@@ -42,6 +42,7 @@ import it.reply.orchestrator.service.ToscaServiceTest;
 import it.reply.orchestrator.service.VaultService;
 import it.reply.orchestrator.service.deployment.providers.factory.MarathonClientFactory;
 import it.reply.orchestrator.util.TestUtil;
+import it.reply.orchestrator.utils.ToscaConstants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -174,7 +175,7 @@ public class MarathonServiceTest extends ToscaParserAwareTest {
     runtime.setId("1");
     runtime.setState(NodeStates.INITIAL);
     runtime.setToscaNodeName("Docker");
-    runtime.setToscaNodeType("tosca.nodes.indigo.Container.Runtime.Docker");
+    runtime.setToscaNodeType(ToscaConstants.Nodes.Types.DOCKER_RUNTIME);
     deployment.getResources().add(runtime);
 
     Resource app = new Resource();
@@ -182,7 +183,7 @@ public class MarathonServiceTest extends ToscaParserAwareTest {
     app.setId("2");
     app.setState(NodeStates.INITIAL);
     app.setToscaNodeName("marathon");
-    app.setToscaNodeType("tosca.nodes.indigo.Container.Application.Docker.Marathon");
+    app.setToscaNodeType(ToscaConstants.Nodes.Types.MARATHON);
     app.addRequiredResource(runtime);
     deployment.getResources().add(app);
 

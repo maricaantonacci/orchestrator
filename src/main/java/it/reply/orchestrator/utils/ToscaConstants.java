@@ -27,32 +27,32 @@ public class ToscaConstants {
     @UtilityClass
     public static class Types {
 
-      private static final String BASE_INDIGO_NAME = "tosca.nodes.indigo.";
+      private static final String BASE_TYPES_NAME = "tosca.nodes.indigo.";
       public static final String DOCKER_APPLICATION =
-          BASE_INDIGO_NAME + "Container.Application.Docker";
+          BASE_TYPES_NAME + "Container.Application.Docker";
       public static final String CHRONOS = DOCKER_APPLICATION + ".Chronos";
       public static final String MARATHON = DOCKER_APPLICATION + ".Marathon";
-      public static final String COMPUTE = BASE_INDIGO_NAME + "Compute";
-      public static final String QCG = BASE_INDIGO_NAME + "Qcg.Job";
+      public static final String COMPUTE = BASE_TYPES_NAME + "Compute";
+      public static final String QCG = BASE_TYPES_NAME + "Qcg.Job";
 
-      public static final String DOCKER_RUNTIME = BASE_INDIGO_NAME + "Container.Runtime.Docker";
-      public static final String ONEDATA_SPACE = BASE_INDIGO_NAME + "OnedataSpace";
-      public static final String ONEDATA_SERVICE_SPACE = BASE_INDIGO_NAME + "OnedataServiceSpace";
-      public static final String DYNAFED = BASE_INDIGO_NAME + "Dynafed";
+      public static final String DOCKER_RUNTIME = BASE_TYPES_NAME + "Container.Runtime.Docker";
+      public static final String ONEDATA_SPACE = BASE_TYPES_NAME + "OnedataSpace";
+      public static final String ONEDATA_SERVICE_SPACE = BASE_TYPES_NAME + "OnedataServiceSpace";
+      public static final String DYNAFED = BASE_TYPES_NAME + "Dynafed";
 
-      public static final String CENTRAL_POINT = BASE_INDIGO_NAME + "VR.CentralPoint";
-      public static final String VROUTER = BASE_INDIGO_NAME + "VR.VRouter";
-      public static final String CLIENT = BASE_INDIGO_NAME + "VR.Client";
-      public static final String ELASTIC_CLUSTER = BASE_INDIGO_NAME + "ElasticCluster";
+      public static final String CENTRAL_POINT = BASE_TYPES_NAME + "VR.CentralPoint";
+      public static final String VROUTER = BASE_TYPES_NAME + "VR.VRouter";
+      public static final String CLIENT = BASE_TYPES_NAME + "VR.Client";
+      public static final String ELASTIC_CLUSTER = BASE_TYPES_NAME + "ElasticCluster";
 
-      public static final String WORKER_NODE = BASE_INDIGO_NAME + "LRMS.WorkerNode";
+      public static final String WORKER_NODE = BASE_TYPES_NAME + "LRMS.WorkerNode";
       public static final String SLURM_WN = WORKER_NODE + ".Slurm";
       public static final String TORQUE_WN = WORKER_NODE  + ".Torque";
       public static final String GALAXY_WN = WORKER_NODE  + ".SlurmGalaxy";
       public static final String MESOS_WN = WORKER_NODE  + ".Mesos";
       public static final String KUBERNETES_WN = WORKER_NODE  + ".Kubernetes";
 
-      public static final String FRONT_END = BASE_INDIGO_NAME  + "LRMS.FrontEnd";
+      public static final String FRONT_END = BASE_TYPES_NAME  + "LRMS.FrontEnd";
       public static final String SLURM_FE = FRONT_END  + ".Slurm";
       public static final String TORQUE_FE = FRONT_END  + ".Torque";
       public static final String GALAXY_FE = FRONT_END  + ".SlurmGalaxy";
@@ -73,21 +73,12 @@ public class ToscaConstants {
     }
 
     @UtilityClass
-    public static class Attributes {
-      public static final String PRIVATE = "private";
-      public static final String ISOLATED = "isolated";
-    }
-
-    @UtilityClass
-    public static class Properties {
-      public static final String NETWORKTYPE = "network_type";
-      public static final String NETWORKNAME = "network_name";
-      public static final String HYBRID = "hybrid";
-    }
-
-    @UtilityClass
     public static class Capabilities {
+      public static final String BASE_CAPABILITIES_NAME = "tosca.capabilities.indigo.";
       public static final String CENTRALPOINT = "central_point";
+      public static final String ENDPOINT = BASE_CAPABILITIES_NAME + "Endpoint";
+      public static final String CONTAINER = BASE_CAPABILITIES_NAME + "Container";
+      public static final String OS = BASE_CAPABILITIES_NAME + "OperatingSystem";
     }
   }
 
@@ -97,8 +88,8 @@ public class ToscaConstants {
     @UtilityClass
     public static class Types {
 
-      private static final String BASE_INDIGO_NAME = "tosca.policies.indigo.";
-      public static final String SLA_PLACEMENT = BASE_INDIGO_NAME + "SlaPlacement";
+      private static final String BASE_POLICIES_NAME = "tosca.policies.indigo.";
+      public static final String SLA_PLACEMENT = BASE_POLICIES_NAME + "SlaPlacement";
     }
 
     @UtilityClass
