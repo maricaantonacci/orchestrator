@@ -767,6 +767,21 @@ public class ImServiceTest extends ToscaParserAwareTest {
     Mockito.when(infrastructureManager.getInfrastructureState(deployment.getEndpoint()))
         .thenReturn(infrastructureState);
 
+    List<VirtualMachineInfo> info= generateVirtualMachineInfo(2);
+    List<Resource> resources = new ArrayList<>(deployment.getResources());
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String,String> metadata1 = new HashMap<>();
+    metadata1.put("VirtualMachineInfo",  mapper.writeValueAsString(info.get(0)));
+    resources.get(0).setMetadata(metadata1);
+    Map<String,String> metadata2 = new HashMap<>();
+    metadata2.put("VirtualMachineInfo",  mapper.writeValueAsString(info.get(1)));
+    resources.get(1).setMetadata(metadata2);
+    Mockito
+        .when(infrastructureManager.getVmInfo(Mockito.eq(deployment.getEndpoint()), Mockito.anyString()))
+        .thenReturn(info.get(0), info.get(1));
+    Mockito.when(resourceRepository
+            .findByDeployment_id(deployment.getId())).thenReturn(resources);    
+
     assertThat(imService.isUndeployed(dm)).isFalse();
   }
 

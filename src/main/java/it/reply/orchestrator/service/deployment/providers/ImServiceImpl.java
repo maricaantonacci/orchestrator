@@ -672,19 +672,21 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
       VirtualMachineInfo vmInfo =
           executeWithClientForResult(cloudProviderEndpoints, requestedWithToken,
               client -> client.getVmInfo(infrastructureId, vmId));
-      vmInfo
-          .getVmProperties()
-          .stream()
-          .filter(Objects::nonNull)
-          .filter(properties -> "system".equals(properties.get("class")))
-          .map(properties -> properties.get("id"))
-          .filter(Objects::nonNull)
-          .map(Object::toString)
-          .findAny()
-          .ifPresent(toscaNodeName -> {
-            vmMap.put(toscaNodeName, vmId);
-            vmMapInfo.put(vmId, vmInfo);
-          });
+      if (vmInfo != null) {
+        vmInfo
+            .getVmProperties()
+            .stream()
+            .filter(Objects::nonNull)
+            .filter(properties -> "system".equals(properties.get("class")))
+            .map(properties -> properties.get("id"))
+            .filter(Objects::nonNull)
+            .map(Object::toString)
+            .findAny()
+            .ifPresent(toscaNodeName -> {
+              vmMap.put(toscaNodeName, vmId);
+              vmMapInfo.put(vmId, vmInfo);
+            });
+      }
     }
 
     Map<Boolean, Set<Resource>> resources =
