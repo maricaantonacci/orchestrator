@@ -1,0 +1,8 @@
+name: "indigovr2_compute"
+hostCapabilities:
+  num_cpus: "1"
+  mem_size: "2 GB"
+imageCapabilities:
+  distribution: "ubuntu"
+  version: "16.04"
+  type: "linux"

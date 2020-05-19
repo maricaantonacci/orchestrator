@@ -53,6 +53,7 @@ import it.reply.orchestrator.service.deployment.providers.ChronosServiceImpl.Ind
 import it.reply.orchestrator.service.deployment.providers.ChronosServiceImpl.JobState;
 import it.reply.orchestrator.service.deployment.providers.factory.ChronosClientFactory;
 import it.reply.orchestrator.util.TestUtil;
+import it.reply.orchestrator.utils.ToscaConstants;
 import it.reply.orchestrator.utils.ToscaConstants.Nodes;
 import it.reply.orchestrator.utils.ToscaUtils;
 
@@ -495,7 +496,7 @@ public class ChronosServiceTest extends ToscaParserAwareTest {
     runtime2.setId("3");
     runtime2.setState(NodeStates.INITIAL);
     runtime2.setToscaNodeName("docker_runtime2");
-    runtime2.setToscaNodeType("tosca.nodes.indigo.Container.Runtime.Docker");
+    runtime2.setToscaNodeType(ToscaConstants.Nodes.Types.DOCKER_RUNTIME);
     deployment.getResources().add(runtime2);
 
     Resource job2 = new Resource();
@@ -503,7 +504,7 @@ public class ChronosServiceTest extends ToscaParserAwareTest {
     job2.setId("4");
     job2.setState(NodeStates.INITIAL);
     job2.setToscaNodeName("chronos_job_upload");
-    job2.setToscaNodeType("tosca.nodes.indigo.Container.Application.Docker.Chronos");
+    job2.setToscaNodeType(ToscaConstants.Nodes.Types.CHRONOS);
     job2.addRequiredResource(runtime2);
     deployment.getResources().add(job2);
 

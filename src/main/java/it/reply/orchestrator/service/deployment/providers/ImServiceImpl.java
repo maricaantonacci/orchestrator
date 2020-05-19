@@ -206,6 +206,7 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
 
   @Override
   public boolean isDeployed(DeploymentMessage deploymentMessage) {
+
     Deployment deployment = getDeployment(deploymentMessage);
 
     final OidcTokenId requestedWithToken = deploymentMessage.getRequestedWithToken();
@@ -218,9 +219,10 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
       InfrastructureState infrastructureState = executeWithClientForResult(cloudProviderEndpoints,
           requestedWithToken, client -> client.getInfrastructureState(deployment.getEndpoint()));
 
-      LOG.debug(infrastructureState.getFormattedInfrastructureStateString());
+      String istate = infrastructureState.getFormattedInfrastructureStateString();
+      LOG.debug(istate);
 
-      bindResources(deploymentMessage, infrastructureState);
+      bindResources(deployment, requestedWithToken, cloudProviderEndpoints, infrastructureState);
 
       switch (infrastructureState.getEnumState()) {
         case CONFIGURED:
@@ -231,7 +233,7 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
           StringBuilder sb =
               new StringBuilder(
                   "Some error occurred during the contextualization of the IM infrastructure\n")
-                      .append(infrastructureState.getFormattedInfrastructureStateString());
+                      .append(istate);
           additionalErrorInfo.ifPresent(s -> sb.append("\n").append(s));
 
           throw new BusinessWorkflowException(ErrorCode.CLOUD_PROVIDER_ERROR,
@@ -628,6 +630,9 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
               client -> client.getInfrastructureState(deploymentEndpoint));
 
       LOG.debug(infrastructureState.getFormattedInfrastructureStateString());
+
+      bindResources(deployment, requestedWithToken, cloudProviderEndpoints, infrastructureState);
+
     } catch (ImClientErrorException exception) {
       if (exception.getResponseError().is404Error()) {
         return true;
@@ -653,16 +658,12 @@ public class ImServiceImpl extends AbstractDeploymentProviderService {
    * @param infrastructureState
    *
    */
-  private void bindResources(DeploymentMessage deploymentMessage,
-      InfrastructureState infrastructureState)
-      throws ImClientException {
+  private void bindResources(Deployment deployment,
+      OidcTokenId requestedWithToken,
+      List<CloudProviderEndpoint> cloudProviderEndpoints,
+      InfrastructureState infrastructureState) throws ImClientException {
 
-    Deployment deployment = getDeployment(deploymentMessage);
     String infrastructureId = deployment.getEndpoint();
-    final OidcTokenId requestedWithToken = deploymentMessage.getRequestedWithToken();
-
-    List<CloudProviderEndpoint> cloudProviderEndpoints =
-        deployment.getCloudProviderEndpoint().getAllCloudProviderEndpoint();
 
     // for each URL get the tosca Node Name about the VM
     Multimap<String, String> vmMap = HashMultimap.create();

@@ -335,15 +335,25 @@ public class ToscaServiceTest extends ToscaParserAwareTest {
 
 	@Test
 	public void checkHybridUpdateDeploymentSetting() throws Exception {
-		String template = TestUtil.getFileContentAsString(TEMPLATES_BASE_DIR + "tosca_hybrid_before_update.yaml");
-		ArchiveRoot ar = toscaService.parse(template);
-		ArchiveRoot arNew = toscaService.setHybridUpdateDeployment(ar, true, PUBLIC_NETWORK_NAME2,
-		    PRIVATE_NETWORK_NAME2, PRIVATE_NETWORK_CIDR2);
+	  String template = TestUtil.getFileContentAsString(TEMPLATES_BASE_DIR + "tosca_hybrid_before_update.yaml");
+	  ArchiveRoot ar = toscaService.parse(template);
+	  ArchiveRoot arNew = toscaService.setHybridUpdateDeployment(ar, true, PUBLIC_NETWORK_NAME2,
+	      PRIVATE_NETWORK_NAME2, PRIVATE_NETWORK_CIDR2);
 
-		Assertions.assertThat(toscaService.getNodesOfType(arNew, ToscaConstants.Nodes.Types.CENTRAL_POINT)).size().isOne();
-		Assertions.assertThat(toscaService.getNodesOfType(arNew, ToscaConstants.Nodes.Types.CLIENT)).size().isOne();
+	  Assertions.assertThat(toscaService.getNodesOfType(arNew, ToscaConstants.Nodes.Types.CENTRAL_POINT)).size().isOne();
+	  Assertions.assertThat(toscaService.getNodesOfType(arNew, ToscaConstants.Nodes.Types.CLIENT)).size().isOne();
 
-		NodeTemplate indigoVRNode = arNew.getTopology().getNodeTemplates().get("indigovr_client");
-		Assertions.assertThat(indigoVRNode.getRelationships().get("central_point").getTarget()).isEqualTo("indigovr_cp");
+	  NodeTemplate indigoVRNode = arNew.getTopology().getNodeTemplates().get("indigovr_client");
+	  Assertions.assertThat(indigoVRNode.getRelationships().get("central_point").getTarget()).isEqualTo("indigovr_cp");
+
+    template = TestUtil.getFileContentAsString(TEMPLATES_BASE_DIR + "tosca_hybrid_before_create1.yaml");
+    ar = toscaService.parse(template);
+    arNew = toscaService.setHybridUpdateDeployment(ar, true, PUBLIC_NETWORK_NAME2,
+        PRIVATE_NETWORK_NAME2, PRIVATE_NETWORK_CIDR2);
+
+    Assertions.assertThat(toscaService.getNodesOfType(arNew, ToscaConstants.Nodes.Types.VROUTER)).size().isEqualTo(1);
+    NodeTemplate privNetworkNode = arNew.getTopology().getNodeTemplates().get("priv_network");
+    Assertions.assertThat(((ScalarPropertyValue)privNetworkNode.getProperties().get("network_type")).getValue()).isEqualTo("isolated");
+
 	}
 }

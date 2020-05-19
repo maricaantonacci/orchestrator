@@ -1,0 +1,4 @@
+name: "openvpn"
+properties:
+  protocol: "udp"
+  source: "1194"

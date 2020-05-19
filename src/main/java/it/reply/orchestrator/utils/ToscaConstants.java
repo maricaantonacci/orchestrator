@@ -62,6 +62,9 @@ public class ToscaConstants {
       public static final String NODES_NETWORK = "tosca.nodes.network.";
       public static final String NETWORK = NODES_NETWORK + "Network";
       public static final String PORT = NODES_NETWORK + "Port";
+
+      public static final String WN_PREFIX = "wn";
+      public static final String EC_PREFIX = "lrms";
     }
 
     @UtilityClass
@@ -119,7 +122,7 @@ public class ToscaConstants {
 
   @UtilityClass
   public static class ToscaNames {
-    public static final String CENTRALPOINT = "central_point";    
+    public static final String CENTRALPOINT = "central_point";
     public static final String VRCP = "indigovr_cp";
     public static final String VRCLIENT = "indigovr_client";
     public static final String REMOVAL_LIST = "removal_list";
@@ -133,6 +136,12 @@ public class ToscaConstants {
     public static final String PUBLIC = "public";
     public static final String PRIVATE = "private";
     public static final String ISOLATED = "isolated";
+    public static final String CIDR = "cidr";
+    public static final String BINDING = "binding";
+    public static final String LINK = "link";
+    public static final String GWIP = "gateway_ip";
+    public static final String DNSNAME = "dns_name";
+    public static final String PORTS = "ports";
     public static final String HYBRID = "hybrid";
   }
 }
