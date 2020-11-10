@@ -572,6 +572,9 @@
               <include>kubernetes/**</include>
               <include>pom.xml</include>
             </includes>
+            <excludes>
+              <exclude>src/main/java/it/reply/orchestrator/dto/kubernetes/fluxcd/**</exclude>
+            </excludes>
             <useDefaultExcludes>true</useDefaultExcludes>
             <useDefaultMapping>true</useDefaultMapping>
             <strictCheck>true</strictCheck>
@@ -599,6 +602,9 @@
           <version>2.7</version>
           <configuration>
             <instrumentation>
+              <excludes>
+                <exclude>src/main/java/it/reply/orchestrator/dto/kubernetes/fluxcd/**</exclude>
+              </excludes>
               <ignoreMethodAnnotations>
                 <ignoreMethodAnnotation>lombok.Generated</ignoreMethodAnnotation>
               </ignoreMethodAnnotations>
@@ -661,6 +667,7 @@
           <excludes>
             <exclude>**/*.jar</exclude>
             <exclude>**/*.war</exclude>
+            <exclude>src/main/java/it/reply/orchestrator/dto/kubernetes/fluxcd/**</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -717,6 +724,9 @@
           <configLocation>
             ${project.basedir}/tools/maven-checkstyle-plugin/google_checks.xml
           </configLocation>
+          <excludes>
+            it/reply/orchestrator/dto/kubernetes/fluxcd/**
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -734,6 +744,7 @@
         <configuration>
           <excludes>
             <exclude>docker/*.war</exclude>
+            <exclude>src/main/java/it/reply/orchestrator/dto/kubernetes/fluxcd/**</exclude>
             <!-- excluded because I.N.F.N. Copyright -->
             <exclude>src/main/java/it/reply/orchestrator/config/properties/VaultProperties.java</exclude>
             <exclude>src/main/java/it/reply/orchestrator/controller/ConfigurationController.java</exclude>
