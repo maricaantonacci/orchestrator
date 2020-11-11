@@ -133,6 +133,11 @@ public class CloudService implements CmdbIdentifiable {
     supportedIdps = new ArrayList<>();
   }
 
+  @Deprecated
+  protected CloudService() {
+    supportedIdps = new ArrayList<>();
+  }
+
   /**
    * Get if the the service is a OpenStack compute service.
    *
